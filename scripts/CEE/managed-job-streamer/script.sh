@@ -3,8 +3,9 @@
 set -e
 echo 'foo'
 
-#check the time is less than 900 (15 mins)
-if [ "$TIME" -gt 900 ];
+# Assume if a user does not specify a duration of the pcap-collector
+# session, it's 15 minutes (the maximum). Otherwise throw an error if it's more.
+if [ "${TIME:=900}" -gt 900 ];
 then
     echo -e "Time must be less than or equal to 900" >&2
     exit 1

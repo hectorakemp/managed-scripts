@@ -1,0 +1,67 @@
+# https://kubernetes.io/docs/concepts/storage/volumes/#local
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: example-local-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: local-storage
+  local:
+    # is this mounted here on the pod?
+    path: /mnt/disks/pv-example
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ip-10-0-181-217.us-west-1.compute.internal
+---
+# pvc-pod
+# -demo.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-demo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-storage
+  volumeMode: Filesystem
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: pod-demo
+spec:
+  securityContext:
+    allowPrivilegeEscalation: false
+  volumes:
+    - name: pvc-demo-vol
+      persistentVolumeClaim:
+       claimName: pvc-demo
+  containers:
+    - name: pod-demo
+      image: nginx
+      resources:
+        limits:
+          cpu: 10m
+          memory: 80Mi
+        requests:
+          cpu: 10m
+          memory: 80Mi
+      ports:
+        - containerPort: 80
+          name: "http-server"
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: pvc-demo-vol
