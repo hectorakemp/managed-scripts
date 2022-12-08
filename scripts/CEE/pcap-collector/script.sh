@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1039
 
 set -e
 
@@ -115,11 +116,10 @@ spec:
 
       # upload file and detect any errors
       echo "Uploading ${SFTP_FILENAME}..."
-      sshpass -e sftp ${SFTP_OPTIONS} - \${username}@${FTP_HOST} << "
+      sshpass -e sftp ${SFTP_OPTIONS} - \${username}@${FTP_HOST} << EOF
           put /home/mustgather/${SFTP_FILENAME} \${REMOTE_FILENAME}
           bye
-      "
-
+      EOF
 
       if [[ \$? == 0 ]];
       then
